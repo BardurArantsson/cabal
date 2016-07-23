@@ -46,7 +46,6 @@ import Language.Haskell.Extension (Extension(..), Language)
 
 -- cabal-install
 import Distribution.Client.Dependency
-import Distribution.Client.Dependency.Types
 import Distribution.Client.Types
 import qualified Distribution.Client.SolverInstallPlan as CI.SolverInstallPlan
 
@@ -412,7 +411,6 @@ exResolve :: ExampleDb
           -> Maybe [Language]
           -> PC.PkgConfigDb
           -> [ExamplePkgName]
-          -> Solver
           -> Maybe Int
           -> IndependentGoals
           -> ReorderGoals
@@ -420,9 +418,9 @@ exResolve :: ExampleDb
           -> Maybe [ExampleVar]
           -> [ExPreference]
           -> Progress String String CI.SolverInstallPlan.SolverInstallPlan
-exResolve db exts langs pkgConfigDb targets solver mbj indepGoals reorder
+exResolve db exts langs pkgConfigDb targets mbj indepGoals reorder
           enableBj vars prefs
-    = resolveDependencies C.buildPlatform compiler pkgConfigDb solver params
+    = resolveDependencies C.buildPlatform compiler pkgConfigDb params
   where
     defaultCompiler = C.unknownCompilerInfo C.buildCompilerId C.NoAbiTag
     compiler = defaultCompiler { C.compilerInfoExtensions = exts

@@ -198,7 +198,6 @@ executable cabal
         Distribution.Client.Config
         Distribution.Client.Configure
         Distribution.Client.Dependency
-        Distribution.Client.Dependency.Types
         Distribution.Client.DistDirLayout
         Distribution.Client.Exec
         Distribution.Client.Fetch

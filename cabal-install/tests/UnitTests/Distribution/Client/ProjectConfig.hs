@@ -25,7 +25,6 @@ import Distribution.Simple.Program.Types
 import Distribution.Simple.Program.Db
 
 import Distribution.Client.Types
-import Distribution.Client.Dependency.Types
 import Distribution.Client.BuildReports.Types
 import Distribution.Client.Targets
 import Distribution.Utils.NubList
@@ -344,7 +343,7 @@ instance Arbitrary ProjectConfigShared where
         <*> arbitrary <*> arbitrary
         <*> arbitrary <*> arbitrary
         <*> arbitrary <*> arbitrary
-        <*> arbitrary <*> arbitrary
+        <*> arbitrary
       where
         arbitraryConstraints :: Gen [(UserConstraint, ConstraintSource)]
         arbitraryConstraints =
@@ -353,19 +352,18 @@ instance Arbitrary ProjectConfigShared where
     shrink (ProjectConfigShared
               x00 x01 x02 x03 x04
               x05 x06 x07 x08 x09
-              x10 x11 x12 x13 x14 x15) =
+              x10 x11 x12 x13 x14) =
       [ ProjectConfigShared
           x00' (fmap getNonEmpty x01') (fmap getNonEmpty x02') x03' x04'
           x05' (postShrink_Constraints x06') x07' x08' x09'
           x10' x11' x12' x13' x14' x15'
       | ((x00', x01', x02', x03', x04'),
          (x05', x06', x07', x08', x09'),
-         (x10', x11', x12', x13', x14'),
-          x15')
+         (x10', x11', x12', x13', x14'))
           <- shrink
                ((x00, fmap NonEmpty x01, fmap NonEmpty x02, x03, x04),
                 (x05, preShrink_Constraints x06, x07, x08, x09),
-                (x10, x11, x12, x13, x14), x15)
+                (x10, x11, x12, x13, x14))
       ]
       where
         preShrink_Constraints  = map fst
@@ -574,9 +572,6 @@ instance Arbitrary FlagName where
         flagident   = lowercase <$> shortListOf1 5 (elements flagChars)
                       `suchThat` (("-" /=) . take 1)
         flagChars   = "-_" ++ ['a'..'z']
-
-instance Arbitrary PreSolver where
-    arbitrary = elements [minBound..maxBound]
 
 instance Arbitrary ReorderGoals where
     arbitrary = ReorderGoals <$> arbitrary

@@ -21,8 +21,6 @@ import Distribution.Solver.Types.OptionalStanza
 import Distribution.Solver.Types.PkgConfigDb (PkgConfigDb, pkgConfigDbFromList)
 import Distribution.Solver.Types.Settings
 import Distribution.Client.Dependency (foldProgress)
-import Distribution.Client.Dependency.Types
-         ( Solver(Modular) )
 import UnitTests.Distribution.Solver.Modular.DSL
 import UnitTests.Options
 
@@ -270,7 +268,7 @@ runTest SolverTest{..} = askOption $ \(OptionShowSolverLog showSolverLog) ->
     testCase testLabel $ do
       let lg = exResolve testDb testSupportedExts
                testSupportedLangs testPkgConfigDb testTargets
-               Modular Nothing testIndepGoals (ReorderGoals False)
+               Nothing testIndepGoals (ReorderGoals False)
                (EnableBackjumping True) testGoalOrder testSoftConstraints
           logMsg msg = if showSolverLog
                        then putStrLn msg

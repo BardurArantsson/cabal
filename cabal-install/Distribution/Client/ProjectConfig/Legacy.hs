@@ -292,8 +292,7 @@ convertLegacyAllPackageFlags globalFlags configFlags
     ConfigExFlags {
       configCabalVersion        = projectConfigCabalVersion,
       configExConstraints       = projectConfigConstraints,
-      configPreferences         = projectConfigPreferences,
-      configSolver              = projectConfigSolver
+      configPreferences         = projectConfigPreferences
     } = configExFlags
 
     InstallFlags {
@@ -484,8 +483,7 @@ convertToLegacySharedConfig
     configExFlags = ConfigExFlags {
       configCabalVersion  = projectConfigCabalVersion,
       configExConstraints = projectConfigConstraints,
-      configPreferences   = projectConfigPreferences,
-      configSolver        = projectConfigSolver
+      configPreferences   = projectConfigPreferences
     }
 
     installFlags = InstallFlags {

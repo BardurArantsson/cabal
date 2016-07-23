@@ -14,7 +14,6 @@
 -----------------------------------------------------------------------------
 module Distribution.Client.Dependency (
     -- * The main package dependency resolver
-    chooseSolver,
     resolveDependencies,
     Progress(..),
     foldProgress,
@@ -66,9 +65,6 @@ import qualified Distribution.Client.SolverInstallPlan as SolverInstallPlan
 import Distribution.Client.Types
          ( SourcePackageDb(SourcePackageDb)
          , UnresolvedPkgLoc, UnresolvedSourcePackage )
-import Distribution.Client.Dependency.Types
-         ( PreSolver(..), Solver(..)
-         , PackagesPreferenceDefault(..) )
 import Distribution.Client.Sandbox.Types
          ( SandboxPackageInfo(..) )
 import Distribution.Client.Targets
@@ -100,14 +96,11 @@ import Distribution.Simple.Setup
          ( AllowNewer(..), AllowOlder(..), RelaxDeps(..) )
 import Distribution.Text
          ( display )
-import Distribution.Verbosity
-         ( Verbosity )
 import qualified Distribution.Compat.Graph as Graph
 
 import           Distribution.Solver.Types.ComponentDeps (ComponentDeps)
 import qualified Distribution.Solver.Types.ComponentDeps as CD
 import           Distribution.Solver.Types.ConstraintSource
-import           Distribution.Solver.Types.DependencyResolver
 import           Distribution.Solver.Types.InstalledPreference
 import           Distribution.Solver.Types.LabeledPackageConstraint
 import           Distribution.Solver.Types.OptionalStanza
@@ -576,15 +569,6 @@ applySandboxInstallPolicy
 -- * Interface to the standard resolver
 -- ------------------------------------------------------------
 
-chooseSolver :: Verbosity -> PreSolver -> CompilerInfo -> IO Solver
-chooseSolver _verbosity preSolver _cinfo =
-    case preSolver of
-      AlwaysModular -> do
-        return Modular
-
-runSolver :: Solver -> SolverConfig -> DependencyResolver UnresolvedPkgLoc
-runSolver Modular = modularResolver
-
 -- | Run the dependency solver.
 --
 -- Since this is potentially an expensive operation, the result is wrapped in a
@@ -594,22 +578,21 @@ runSolver Modular = modularResolver
 resolveDependencies :: Platform
                     -> CompilerInfo
                     -> PkgConfigDb
-                    -> Solver
                     -> DepResolverParams
                     -> Progress String String SolverInstallPlan
 
     --TODO: is this needed here? see dontUpgradeNonUpgradeablePackages
-resolveDependencies platform comp _pkgConfigDB _solver params
+resolveDependencies platform comp _pkgConfigDB params
   | null (depResolverTargets params)
   = return (validateSolverResult platform comp indGoals [])
   where
     indGoals = depResolverIndependentGoals params
 
-resolveDependencies platform comp pkgConfigDB solver params =
+resolveDependencies platform comp pkgConfigDB params =
 
     Step (showDepResolverParams finalparams)
   $ fmap (validateSolverResult platform comp indGoals)
-  $ runSolver solver (SolverConfig reordGoals cntConflicts
+  $ modularResolver (SolverConfig reordGoals cntConflicts
                       indGoals noReinstalls
                       shadowing strFlags maxBkjumps enableBj order)
                      platform comp installedPkgIndex sourcePkgIndex
@@ -921,3 +904,33 @@ instance Show ResolveNoDepsError where
   show (ResolveUnsatisfiable name ver) =
        "There is no available version of " ++ display name
     ++ " that satisfies " ++ display (simplifyVersionRange ver)
+
+
+-- ------------------------------------------------------------
+-- * Package default preferences
+-- ------------------------------------------------------------
+
+-- | Global policy for all packages to say if we prefer package versions that
+-- are already installed locally or if we just prefer the latest available.
+--
+data PackagesPreferenceDefault =
+
+     -- | Always prefer the latest version irrespective of any existing
+     -- installed version.
+     --
+     -- * This is the standard policy for upgrade.
+     --
+     PreferAllLatest
+
+     -- | Always prefer the installed versions over ones that would need to be
+     -- installed. Secondarily, prefer latest versions (eg the latest installed
+     -- version or if there are none then the latest source version).
+   | PreferAllInstalled
+
+     -- | Prefer the latest version for packages that are explicitly requested
+     -- but prefers the installed version for any other packages.
+     --
+     -- * This is the standard policy for install.
+     --
+   | PreferLatestForSelected
+  deriving Show

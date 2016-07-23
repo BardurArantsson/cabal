@@ -66,7 +66,6 @@ import           Distribution.Client.Types
 import qualified Distribution.Client.InstallPlan as InstallPlan
 import qualified Distribution.Client.SolverInstallPlan as SolverInstallPlan
 import           Distribution.Client.Dependency
-import           Distribution.Client.Dependency.Types
 import qualified Distribution.Client.IndexUtils as IndexUtils
 import           Distribution.Client.Targets (userToPackageConstraint)
 import           Distribution.Client.DistDirLayout
@@ -465,13 +464,9 @@ rebuildInstallPlan verbosity
           -- ones relevant for the compiler.
 
           liftIO $ do
-            solver <- chooseSolver verbosity
-                                   (solverSettingSolver solverSettings)
-                                   (compilerInfo compiler)
-
             notice verbosity "Resolving dependencies..."
             foldProgress logMsg die return $
-              planPackages compiler platform solver solverSettings
+              planPackages compiler platform solverSettings
                            installedPkgIndex sourcePkgDb pkgConfigDB
                            localPackages localPackagesEnabledStanzas
       where
@@ -839,20 +834,20 @@ getPackageSourceHashes verbosity withRepoCtx solverPlan = do
 
 planPackages :: Compiler
              -> Platform
-             -> Solver -> SolverSettings
+             -> SolverSettings
              -> InstalledPackageIndex
              -> SourcePackageDb
              -> PkgConfigDb
              -> [UnresolvedSourcePackage]
              -> Map PackageName (Map OptionalStanza Bool)
              -> Progress String String SolverInstallPlan
-planPackages comp platform solver SolverSettings{..}
+planPackages comp platform SolverSettings{..}
              installedPkgIndex sourcePkgDb pkgConfigDB
              localPackages pkgStanzasEnable =
 
     resolveDependencies
       platform (compilerInfo comp)
-      pkgConfigDB solver
+      pkgConfigDB
       resolverParams
 
   where
