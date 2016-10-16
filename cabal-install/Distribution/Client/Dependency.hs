@@ -340,21 +340,7 @@ setGoalOrder order params =
 -- | Some packages are specific to a given compiler version and should never be
 -- upgraded.
 dontUpgradeNonUpgradeablePackages :: DepResolverParams -> DepResolverParams
-dontUpgradeNonUpgradeablePackages params =
-    addConstraints extraConstraints params
-  where
-    extraConstraints =
-      [ LabeledPackageConstraint
-        (PackageConstraintInstalled pkgname)
-        ConstraintSourceNonUpgradeablePackage
-      | Set.notMember (mkPackageName "base") (depResolverTargets params)
-      , pkgname <- map mkPackageName [ "base", "ghc-prim", "integer-gmp"
-                                     , "integer-simple" ]
-      , isInstalled pkgname ]
-
-    isInstalled = not . null
-                . InstalledPackageIndex.lookupPackageName
-                                 (depResolverInstalledPkgIndex params)
+dontUpgradeNonUpgradeablePackages params = params
 
 addSourcePackages :: [UnresolvedSourcePackage]
                   -> DepResolverParams -> DepResolverParams

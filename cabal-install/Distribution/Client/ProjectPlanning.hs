@@ -2441,13 +2441,11 @@ basePkgname  = mkPackageName "base"
 legacyCustomSetupPkgs :: Compiler -> Platform -> [PackageName]
 legacyCustomSetupPkgs compiler (Platform _ os) =
     map mkPackageName $
-        [ "array", "base", "binary", "bytestring", "containers"
+        [ "array", "binary", "bytestring", "containers"
         , "deepseq", "directory", "filepath", "old-time", "pretty"
         , "process", "time", "transformers" ]
      ++ [ "Win32" | os == Windows ]
      ++ [ "unix"  | os /= Windows ]
-     ++ [ "ghc-prim"         | isGHC ]
-     ++ [ "template-haskell" | isGHC ]
   where
     isGHC = compilerCompatFlavor GHC compiler
 

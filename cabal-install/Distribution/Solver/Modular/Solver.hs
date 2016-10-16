@@ -129,13 +129,7 @@ solve sc cinfo idx pkgConfigDB userPrefs userConstraints userGoals =
                        P.enforceSingleInstanceRestriction .
                        validateLinking idx .
                        validateTree cinfo idx pkgConfigDB
-    prunePhase       = (if asBool (avoidReinstalls sc) then P.avoidReinstalls (const True) else id) .
-                       -- packages that can never be "upgraded":
-                       P.requireInstalled (`elem` [ mkPackageName "base"
-                                                  , mkPackageName "ghc-prim"
-                                                  , mkPackageName "integer-gmp"
-                                                  , mkPackageName "integer-simple"
-                                                  ])
+    prunePhase       = (if asBool (avoidReinstalls sc) then P.avoidReinstalls (const True) else id)
     buildPhase       = traceTree "build.json" id
                      $ addLinking
                      $ buildTree idx (independentGoals sc) (S.toList userGoals)
